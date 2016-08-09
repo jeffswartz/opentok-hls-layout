@@ -7,8 +7,8 @@ and an HLS broadcast stream for an OpenTok session.
 Make sure you have Node.js installed.
 
 ```sh
-git clone git@github.com:jeffswartz/opentok-node-samples.git # or clone your own fork
-cd opentok-node-samples
+git clone git@github.com:jeffswartz/opentok-hls-layout.git # or clone your own fork
+cd opentok-hls-layout
 npm install
 ```
 
