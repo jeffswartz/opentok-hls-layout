@@ -1,6 +1,7 @@
 var express = require('express');
 var OpenTok = require('opentok');
 var request = require('request');
+var bodyParser = require('body-parser');
 
 var apiKey = process.env.API_KEY;
 var apiSecret = process.env.API_SECRET;
@@ -21,6 +22,8 @@ if (VALID_LAYOUTS.indexOf(LAYOUT_TYPE) === -1) {
 }
 
 var app = express();
+app.use(bodyParser.json());
+
 app.use(express.static(__dirname + '/public'));
 
 var opentok = new OpenTok(apiKey, apiSecret);
@@ -101,6 +104,37 @@ app.get('/broadcast/layout/:layoutType', function(req, res) {
     },
     json: {
       type: layoutType
+    }
+  };
+  request(req, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      res.send('');
+      console.log('layoutType changed');
+    } else {
+      console.log(error, response.statusCode);
+      res.send(response);
+    }
+  })
+});
+
+app.post('/stream/:streamId/layoutClassList', function(req, res) {
+  var streamId = req.params.streamId;
+  console.log('change stream class list', streamId, req.body);
+  var classList = req.body;
+  var sessionId = app.get('sessionId');
+  var req = {
+    uri: 'https://api.opentok.com/v2/partner/' + apiKey + '/session/' +
+      sessionId + '/stream',
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-TB-PARTNER-AUTH': apiKey + ':' + apiSecret
+    },
+    json: {
+      items: [{
+        id: streamId,
+        layoutClassList: classList
+      }]
     }
   };
   request(req, function (error, response, body) {

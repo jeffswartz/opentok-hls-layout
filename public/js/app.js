@@ -7,6 +7,7 @@ var options = {
   publishAudio: false
 };
 
+var publisher;
 var mainVideoDisplayed = false;
 
 session.on({
@@ -16,8 +17,18 @@ session.on({
       publisherContainer.className = 'stream full focus';
       $('#class-selector').show();
     }
-    var publisher = OT.initPublisher(apiKey, publisherContainer, options);
+    publisherContainer.addEventListener('click', () => {
+      streamContainers = document.getElementsByClassName('stream');
+      for (var i = 0; i < streamContainers.length; i++) {
+        var streamContainer = streamContainers[i]
+        streamContainer.className = 'stream';
+      }
+      publisherContainer.className = 'stream full focus';
+      broadcastFocusStreamClass(publisher.stream.streamId);
+    });
+    publisher = OT.initPublisher(apiKey, publisherContainer, options);
     publisher = session.publish(publisher, () => {
+      publisherContainer.id = publisher.stream.streamId;
       if (session.connection.data === 'main') {
         $.get('/broadcast/', function(data) {
           console.log('The broadcast is started. Wait 20 seconds, then open this up in Safari: ', data);
@@ -28,6 +39,9 @@ session.on({
       } else {
         session.on('signal:layoutTypeChange', (event) => {
           setCSS(event.data);
+        });
+        session.on('signal:focusStreamChange', (event) => {
+          setFocusStream(event.data);
         });
       }
     });
@@ -40,7 +54,7 @@ session.on({
       height: '100%',
       subscribeToAudio: false
     };
-    var container = createStreamContainer();
+    var container = createStreamContainer(event.stream.streamId);
     if (event.stream.connection.data === 'main') {
       container.className += ' full focus';
     }
@@ -48,17 +62,38 @@ session.on({
     container.addEventListener('click', () => {
       streamContainers = document.getElementsByClassName('stream');
       for (var i = 0; i < streamContainers.length; i++) {
-        var streamContainer = streamContainers[i]
-        streamContainer.className = 'stream';
+        var streamContainer = streamContainers[i];
+        if (streamContainer.className == 'stream full focus') {
+          streamContainer.className = 'stream';
+        }
       }
       container.className = 'stream full focus';
-    })
+      broadcastFocusStreamClass(container.id);
+    });
   }
 });
 
-function createStreamContainer() {
+function broadcastFocusStreamClass(streamId) {
+  $.post( '/stream/' + publisher.stream.streamId + '/layoutClassList',
+    { classList: ['full', 'focus']},
+    function( data ) {
+  }, 'json')
+  .fail(function() {
+    console.log('change broadcast layout error');
+  });
+  session.signal({
+    type: 'focusStreamChange',
+    data: JSON.stringify({
+      streamId: streamId,
+      classList: 'full focus'
+    })
+  });
+
+}
+function createStreamContainer(streamId) {
   var containerDiv = document.createElement('div');
   containerDiv.className = 'stream';
+  containerDiv.id = streamId;
   var videoContainer = document.getElementById('video-container');
   videoContainer.appendChild(containerDiv);
   return containerDiv;
@@ -85,6 +120,21 @@ function setCSS(cssName) {
     .fail(function() {
       console.log('change broadcast layout error');
     });
+  }
+}
+
+function setFocusStream(data) {
+  data = JSON.parse(data);
+  var streamId = data.streamId;
+  var classList = data.classList;
+  streamContainers = document.getElementsByClassName('stream');
+  for (var i = 0; i < streamContainers.length; i++) {
+    var streamContainer = streamContainers[i];
+    if (streamContainer.id === streamId) {
+      streamContainer.className = 'stream ' + classList;
+    } else {
+      streamContainer.className = 'stream';
+    }
   }
 }
 

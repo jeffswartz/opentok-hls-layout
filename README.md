@@ -40,5 +40,8 @@ npm start
 4. In the "main" client, click a radio button in the top of the page to change
    the layout class.
 
+5. Click a stream that is not the "focus" (one of the smaller streams) to set
+   it as the focus stream (in the layout). The best fit layout has no focus stream.
+
 Before starting the app, you can configure the layout to be used by setting
 the `LAYOUT_TYPE` property in the index.js file.
