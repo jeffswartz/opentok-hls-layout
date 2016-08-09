@@ -1,5 +1,6 @@
-# opentok-node-samples
-Some fully functioning OpenTok samples using Node and Express
+# opentok-hls-layout
+This sample shows one way to maintain consistent layout across browsers
+and an HLS broadcast stream for an OpenTok session.
 
 ## Set up
 
@@ -25,9 +26,7 @@ Then run:
 npm start
 ```
 
-The app runs on [localhost:5000](http://localhost:5000/).
-
-## Testing the broadcast layout class sample
+## Testing the app
 
 1. Open one (and only one) browser client on
    [localhost:5000/main](http://localhost:5000/main).
